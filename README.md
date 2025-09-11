@@ -1,1 +1,1 @@
-# data-driven-pulse
+# Experiments for the Bezierv Python Package
