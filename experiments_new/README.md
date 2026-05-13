@@ -1,0 +1,91 @@
+# experiments_new — Reproducibility scripts for the paper
+
+Command-line scripts that regenerate every table and figure from the paper's
+numerical experiments. Each artefact is produced by exactly one script.
+
+| Paper artefact                                  | Script                  | Output                                     |
+|-------------------------------------------------|-------------------------|--------------------------------------------|
+| Figure 4 — multimodal Bézier fit                | `fig_multimodal.py`     | `figures/multimodal.pgf`                   |
+| Table 1 — MLE comparison, synthetic data        | `tab_synthetic.py`      | `tables/syntheticmle.tex` (+ raw CSV)      |
+| Table 2 — MSE comparison, synthetic data        | `tab_synthetic.py`      | `tables/syntheticmse.tex`                  |
+| Table 3 — Chicago descriptive statistics        | `tab_real_stats.py`     | `tables/realdist.tex`                      |
+| Table 4 — MLE comparison, transportation data   | `tab_real_mle.py`       | `tables/realmle.tex` (+ raw CSV)           |
+| Table 5 — MSE comparison, transportation data   | `tab_real_mse.py`       | `tables/MDEtab.tex` (+ raw CSV)            |
+| Figure 5 — restriction quality vs degree        | `fig_restriction.py`    | `figures/restriction.pgf` (+ raw CSV)      |
+| §8 — S-αRP application (Figures 6a & 6b)        | `exp_sarp.py`           | `figures/sarp_path_grid.pgf`, `figures/sarp_path_dist.pgf` + console |
+
+The toy examples (Figures 1, 2, 3a, 3b) are intentionally not reproduced — they
+are TikZ illustrations or GUI screenshots that do not depend on experimental
+data.
+
+## Setup
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+The Chicago dataset (`data/Chicago_main.json`, ≈280 MB) is the timestamped raw
+data used by `tab_real_*` and `exp_sarp.py`.
+
+## Smoke mode vs. paper-faithful runs
+
+Several scripts default to a small subset so iteration is fast. To regenerate
+the paper-faithful numbers, pass the documented flag:
+
+```bash
+# Tables 1, 2 (synthetic):   3 instances/family  ->  200 instances/family
+python tab_synthetic.py --n-per-family 200
+
+# Tables 4, 5 (Chicago):    20 arcs/regime   ->  all arcs (~1086/regime)
+python tab_real_mle.py --max-arcs 0
+python tab_real_mse.py --max-arcs 0
+
+# Figure 5 (restriction):    n = 3..6        ->  n = 3..20
+python fig_restriction.py --n-max 20
+
+# §8 (S-αRP):                n_sims = 100    ->  n_sims = 1000
+python exp_sarp.py --n-sims 1000
+```
+
+Other scripts (`fig_multimodal.py`, `tab_real_stats.py`) always run at
+paper-faithful settings since they're fast.
+
+## Wiring outputs back into the paper
+
+Tables emit a complete `\begin{table}...\end{table}` block
+
+Figures emit a `.pgf` file (for `\input{}` into the paper) and a sibling `.png`
+of the same name for quick visual inspection without compiling LaTeX.
+
+## Layout
+
+```
+experiments_new/
+├── README.md, requirements.txt
+├── data/                       # Chicago_main.json (raw, 280 MB)
+├── figures/                    # generated .pgf
+├── tables/                     # generated .tex + raw .csv
+├── _plot_style.py              # matplotlib rcParams (publication-quality)
+├── _latex_tables.py            # booktabs/multirow formatters
+├── _fit_benchmark.py           # Bezier/Beta/Johnson MLE + Bezier MSE fits
+├── _chicago_graph.py           # Chicago_main.json -> per-regime arc dicts
+├── _sarp.py                    # pulse callbacks + Bezier-weighted graph builder
+├── fig_multimodal.py
+├── fig_restriction.py
+├── tab_synthetic.py
+├── tab_real_stats.py
+├── tab_real_mle.py
+├── tab_real_mse.py
+└── exp_sarp.py
+```
+
+The legacy notebooks in `experiments/` are preserved untouched for
+traceability.
+
+## Reproducibility notes
+
+- All scripts accept `--seed` (default `42`). The synthetic and SARP runs are
+  deterministic given the seed. The Chicago lognormal synthesis (used only for
+  arcs with a single unique observation) is also seeded.
