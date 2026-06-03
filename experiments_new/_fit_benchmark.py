@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time as _time
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -18,6 +19,11 @@ from bezierv.classes.distfit import (
     ProjGradOptions,
 )
 
+ARC_MSE_COLUMNS = [
+    'regime', 'arc', 'n_samples', 'n_bezier',
+    'method', 'time_s', 'metric_name', 'metric', 'failed',
+]
+
 IPOPT_MAX_CPU_TIME_S = 60.0
 
 
@@ -28,7 +34,7 @@ def _mle_options() -> MLEOptions:
 
 def _mse_options(algorithm: str):
     if algorithm == 'projgrad':
-        return ProjGradOptions(step_size=1e-2, max_iter=200, threshold=1e-3)
+        return ProjGradOptions(max_iter=200, threshold=1e-3)
     if algorithm == 'nonlinear':
         # IPOPT options must be nested under 'options' so Pyomo forwards them
         # to the solver instead of treating them as writer io_options.
@@ -280,3 +286,93 @@ def run_arc_mse_benchmark(
                             'time_s': elapsed, 'metric_name': 'mse', 'metric': mse, 'failed': failed})
 
     return pd.DataFrame.from_records(records)
+
+
+def _append_arc_mse_row(checkpoint_path: Path, row: dict) -> None:
+    """Append a single result row to *checkpoint_path*, writing the header on first write.
+
+    Uses a fixed column order (ARC_MSE_COLUMNS) so reruns produce a consistent CSV.
+    Writes are flushed immediately so a Ctrl-C does not lose the latest result.
+    """
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    write_header = not checkpoint_path.exists()
+    frame = pd.DataFrame([{c: row.get(c) for c in ARC_MSE_COLUMNS}], columns=ARC_MSE_COLUMNS)
+    with open(checkpoint_path, 'a', newline='') as f:
+        frame.to_csv(f, header=write_header, index=False)
+        f.flush()
+
+
+def _load_done_arc_methods(checkpoint_path: Path, regime: str) -> set[tuple[str, str]]:
+    """Return the set of (arc, method) pairs already recorded for *regime*."""
+    if not checkpoint_path.exists():
+        return set()
+    df = pd.read_csv(checkpoint_path)
+    if df.empty or 'arc' not in df.columns or 'method' not in df.columns:
+        return set()
+    if 'regime' in df.columns:
+        df = df[df['regime'] == regime]
+    return set(zip(df['arc'].astype(str), df['method'].astype(str)))
+
+
+def run_arc_mse_benchmark_resumable(
+    arcs: dict,
+    *,
+    n_bezier: int,
+    regime: str,
+    checkpoint_path: Path,
+    seed: int = 42,
+    verbose: bool = True,
+) -> pd.DataFrame:
+    """Resumable variant of :func:`run_arc_mse_benchmark`.
+
+    Each (arc, method) fit is written to *checkpoint_path* as soon as it completes,
+    so a partial run can be resumed by invoking this function again with the same
+    arcs and checkpoint path. Pairs already present in the checkpoint for *regime*
+    are skipped.
+
+    Returns the rows for *regime* loaded back from the checkpoint (so the caller
+    sees both freshly computed results and any prior partial work).
+    """
+    checkpoint_path = Path(checkpoint_path)
+    done = _load_done_arc_methods(checkpoint_path, regime)
+
+    items = sorted(arcs.items(), key=lambda kv: str(kv[0]))
+    methods = [('projgrad', 'bezier_pgd'),
+               ('nonlinear', 'bezier_ipopt'),
+               ('neldermead', 'bezier_nm')]
+    total = len(items) * len(methods)
+    already = sum(1 for key, value in items
+                  for _, m in methods
+                  if (f"{value.get('start_node', key[0])}->{value.get('end_node', key[1])}", m) in done)
+
+    pbar = tqdm(total=total, initial=already,
+                desc=f'Arc MSE (n={n_bezier}, {regime})', unit='fit',
+                disable=not verbose)
+
+    for key, value in items:
+        sample = np.sort(np.asarray(value['travel_time'], dtype=np.float64))
+        arc_label = f"{value.get('start_node', key[0])}->{value.get('end_node', key[1])}"
+        for algo, method_name in methods:
+            if (arc_label, method_name) in done:
+                continue
+            elapsed, mse, failed = _fit_bezier_mse(sample, algorithm=algo, n=n_bezier)
+            _append_arc_mse_row(checkpoint_path, {
+                'regime': regime,
+                'arc': arc_label,
+                'n_samples': len(sample),
+                'n_bezier': n_bezier,
+                'method': method_name,
+                'time_s': elapsed,
+                'metric_name': 'mse',
+                'metric': mse,
+                'failed': failed,
+            })
+            done.add((arc_label, method_name))
+            pbar.update(1)
+
+    pbar.close()
+
+    df = pd.read_csv(checkpoint_path)
+    if 'regime' in df.columns:
+        df = df[df['regime'] == regime]
+    return df.reset_index(drop=True)

@@ -1,13 +1,7 @@
-# Runtime dependencies for the experiments_new/ scripts.
-# Versions are those currently installed in venv/ as of this writing; pin loosely
-# so newer compatible releases also work.
 bezierv==1.3.1
-pulsekit==0.0.0
+pulsekit==0.0.0 #https://github.com/EstebanLeiva/pulsekit
 numpy==2.0
 pandas==2.2
 scipy==1.13
 matplotlib==3.9
 tqdm==4.66
-# distfit is only needed by experiments/utils_graph.path_cdf_distfit (legacy).
-# The new scripts use bezierv.Convolver directly, so it is optional.
-# distfit>=2.0

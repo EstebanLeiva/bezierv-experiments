@@ -1,0 +1,21 @@
+\begin{table}[H]
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{lc rr rr c rr rr c rr rr c}
+        \toprule
+        & & \multicolumn{5}{c}{PGD} & \multicolumn{5}{c}{IPOPT} & \multicolumn{5}{c}{NM} \\
+        \cmidrule(lr){3-7} \cmidrule(lr){8-12} \cmidrule(lr){13-17}
+        & & \multicolumn{2}{c}{time (ms)} & \multicolumn{2}{c}{MSE} & & \multicolumn{2}{c}{time (ms)} & \multicolumn{2}{c}{MSE} & & \multicolumn{2}{c}{time (ms)} & \multicolumn{2}{c}{MSE} & \\
+        \cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){8-9} \cmidrule(lr){10-11} \cmidrule(lr){13-14} \cmidrule(lr){15-16}
+        time frame & $n$ & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{fail} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{fail} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{fail} \\
+        \midrule
+        Rush hour    & 10 & 1.2 & 0.5 & 0.0131 & 0.0570 & 0.0\% & 1056.0 & 1376.7 & 0.0014 & 0.0257 & 12.3\% & 7677.3 & 1350.4 & 0.0621 & 0.1058 & 0.4\% \\
+        Daytime      & 15 & 2.6 & 0.9 & 0.0159 & 0.0538 & 0.0\% & 7362.9 & 7707.7 & 0.0016 & 0.0326 & 17.3\% & 25471.9 & 5163.3 & 0.1659 & 0.1257 & 0.1\% \\
+        Full-day     & 20 & 4.8 & 1.4 & 0.0147 & 0.0502 & 0.0\% & 24043.5 & 25524.9 & 0.0011 & 0.0165 & 30.6\% & 53841.9 & 12276.6 & 0.2043 & 0.1323 & 0.0\% \\
+        \midrule
+        \multicolumn{2}{l}{average} & \textbf{2.9} & \textbf{0.9} & 0.0146 & 0.0537 & \textbf{0.0\%} & 10820.8 & 11536.4 & \textbf{0.0013} & \textbf{0.0249} & 20.1\% & 28997.0 & 6263.4 & 0.1441 & 0.1213 & 0.2\% \\
+        \bottomrule
+    \end{tabular}}
+    \caption{MSE comparison (transportation data).}
+    \label{tab:MDEtab}
+\end{table}

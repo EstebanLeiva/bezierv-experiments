@@ -125,11 +125,12 @@ def main() -> None:
     ax.plot(x_vals, cdf_vals, color='#0072B2', label=r'B\'ezier CDF')
     ax.axhline(args.alpha, color='#009E73', linestyle='--',
                label=f'${int(args.alpha * 100)}\\%$ reliability')
-    ax.axvline(cal['T_max'], color='#D55E00', linestyle='--', label=r'Time budget $T_{\max}$')
+    ax.axvline(cal['T_max'], color='#D55E00', linestyle='--', label=r'Time budget')
     ax.set_xlabel(r'Travel time (hours)')
     ax.set_ylabel(r'Cumulative probability')
     ax.spines[['top', 'right']].set_visible(False)
-    ax.legend(loc='lower right')
+    ax.legend(loc='lower center', bbox_to_anchor=(0.5, 1.02),
+              ncol=3, frameon=False, borderaxespad=0.)
 
     out = args.output_dir / 'sarp_path_dist.pgf'
     _plot_style.save(fig, out)

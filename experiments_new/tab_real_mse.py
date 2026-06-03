@@ -3,11 +3,19 @@
 dataset across the three time regimes (PGD vs IPOPT vs Nelder-Mead).
 
 Output: tables/MDEtab.tex
-        tables/realmse_raw.csv  (per-arc long-format results)
+        tables/realmse_raw.csv                       (per-arc long-format results)
+        tables/realmse_partial_{regime}.csv          (incremental checkpoint per regime)
+
+The script is resumable: each (arc, method) fit is appended to a per-regime
+checkpoint CSV as soon as it completes. If the run is interrupted (Ctrl-C, crash,
+timeout), simply re-invoke with the same arguments and it will pick up where it
+left off. To start fresh, delete the partial CSVs (or pass --fresh).
 
 Usage:
     python tab_real_mse.py                       # smoke run, 20 arcs per regime
     python tab_real_mse.py --max-arcs 0          # paper-faithful (all arcs, very slow!)
+    python tab_real_mse.py --regime rush_hour    # run only one regime (skips final table)
+    python tab_real_mse.py --fresh               # ignore and remove existing partials
 """
 import argparse
 from pathlib import Path
@@ -107,35 +115,69 @@ def emit_table(regime_dfs: dict[str, pd.DataFrame], out_path: Path) -> None:
     )
 
 
+def _partial_path(output_dir: Path, regime: str) -> Path:
+    return output_dir / f'realmse_partial_{regime}.csv'
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Reproduce paper Table 5 (Chicago MSE).')
     parser.add_argument('--seed', type=int, default=42)
     parser.add_argument('--max-arcs', type=int, default=20,
                         help='Max arcs per regime; 0 = all (paper-faithful).')
+    parser.add_argument('--regime', choices=REGIMES_ORDER, default=None,
+                        help='Run only this regime; omit to run all three '
+                             '(table+CSV are only emitted on a full run).')
     parser.add_argument('--output-dir', type=Path,
                         default=Path(__file__).parent / 'tables')
+    parser.add_argument('--fresh', action='store_true',
+                        help='Delete any existing partial checkpoints before running.')
     args = parser.parse_args()
+
+    regimes = [args.regime] if args.regime else REGIMES_ORDER
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+
+    if args.fresh:
+        for regime in regimes:
+            p = _partial_path(args.output_dir, regime)
+            if p.exists():
+                p.unlink()
+                print(f'[tab_real_mse] removed stale checkpoint {p}')
 
     print('[tab_real_mse] Loading Chicago_main.json …')
     raw = cg.load_raw()
 
     regime_dfs: dict[str, pd.DataFrame] = {}
     all_rows = []
-    for regime in REGIMES_ORDER:
+    for regime in regimes:
         n = cg.REGIME_BEZIER_DEGREE[regime]
         print(f'[tab_real_mse] {regime} (n={n}) — preprocessing')
         proc = cg.preprocess_regime(raw, regime, seed=args.seed)
         proc = cg.filter_multi_obs(proc, min_obs=2)
         if args.max_arcs > 0:
             proc = cg.sample_arcs(proc, args.max_arcs, seed=args.seed)
-        print(f'[tab_real_mse] {regime}: fitting on {len(proc)} arcs')
-        df = fb.run_arc_mse_benchmark(proc, n_bezier=n, seed=args.seed)
-        df['regime'] = regime
-        df['n_bezier'] = n
+        checkpoint = _partial_path(args.output_dir, regime)
+        print(f'[tab_real_mse] {regime}: fitting on {len(proc)} arcs '
+              f'(checkpoint: {checkpoint})')
+        df = fb.run_arc_mse_benchmark_resumable(
+            proc, n_bezier=n, regime=regime, checkpoint_path=checkpoint,
+            seed=args.seed,
+        )
+        # regime/n_bezier are already in the checkpoint rows, but coerce in case
+        # an older partial file is missing them.
+        if 'regime' not in df.columns:
+            df['regime'] = regime
+        if 'n_bezier' not in df.columns:
+            df['n_bezier'] = n
         regime_dfs[regime] = df
         all_rows.append(df)
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+    if args.regime is not None:
+        print(f"[tab_real_mse] Single-regime run ({args.regime}) complete; "
+              f"skipping MDEtab.tex and realmse_raw.csv. "
+              f"Re-run without --regime once all three checkpoints exist to emit them.")
+        return
+
     full = pd.concat(all_rows, ignore_index=True)
     csv_path = args.output_dir / 'realmse_raw.csv'
     full.to_csv(csv_path, index=False)
