@@ -12,6 +12,7 @@ numerical experiments. Each artefact is produced by exactly one script.
 | Table 4 — MLE comparison, transportation data   | `tab_real_mle.py`       | `tables/realmle.tex` (+ raw CSV)           |
 | Table 5 — MSE comparison, transportation data   | `tab_real_mse.py`       | `tables/MDEtab.tex` (+ raw CSV)            |
 | Figure 5 — restriction quality vs degree        | `fig_restriction.py`    | `figures/restriction.pgf` (+ raw CSV)      |
+| Fig. 5 companion — empirical $\mathcal{O}(1/N)$ rate (supplementary) | `fig_restriction_rate.py` | `figures/restriction_rate.pgf` (+ raw & checkpoint CSV) |
 | §8 — S-αRP application (Figures 6a & 6b)        | `exp_sarp.py`           | `figures/sarp_path_grid.pgf`, `figures/sarp_path_dist.pgf` + console |
 
 The toy examples (Figures 1, 2, 3a, 3b) are intentionally not reproduced — they
@@ -31,26 +32,38 @@ data used by `tab_real_*` and `exp_sarp.py`.
 
 ## Smoke mode vs. paper-faithful runs
 
-Several scripts default to a small subset so iteration is fast. To regenerate
-the paper-faithful numbers, pass the documented flag:
+Three scripts default to a small subset so iteration is fast; pass the
+documented flag to regenerate the paper-faithful numbers:
 
 ```bash
 # Tables 1, 2 (synthetic):   3 instances/family  ->  200 instances/family
 python tab_synthetic.py --n-per-family 200
 
-# Tables 4, 5 (Chicago):    20 arcs/regime   ->  all arcs (~1086/regime)
+# Tables 4, 5 (Chicago):     20 arcs/regime   ->  all arcs (~1086/regime)
 python tab_real_mle.py --max-arcs 0
 python tab_real_mse.py --max-arcs 0
-
-# Figure 5 (restriction):    n = 3..6        ->  n = 3..20
-python fig_restriction.py --n-max 20
-
-# §8 (S-αRP):                n_sims = 100    ->  n_sims = 1000
-python exp_sarp.py --n-sims 1000
 ```
 
-Other scripts (`fig_multimodal.py`, `tab_real_stats.py`) always run at
-paper-faithful settings since they're fast.
+The remaining scripts already default to paper-faithful settings; for these a
+flag instead gives a *quicker* run:
+
+```bash
+# Figure 4 (multimodal), Table 3 (stats): always paper-faithful, and fast
+python fig_multimodal.py
+python tab_real_stats.py
+
+# Figure 5 (restriction): default sweeps the paper range n=3..20
+python fig_restriction.py                 # paper sweep
+python fig_restriction.py --n-max 6       # quick look
+
+# Fig. 5 companion (O(1/N) rate): default reproduces it (slow; resumable)
+python fig_restriction_rate.py                       # paper-faithful
+python fig_restriction_rate.py --n-reps 3 --n-max 30 # quick look
+
+# §8 (S-αRP): default uses the full Chicago network
+python exp_sarp.py                        # paper-faithful
+python exp_sarp.py --max-arcs 200         # smoke run on a subset
+```
 
 ## Wiring outputs back into the paper
 
@@ -74,6 +87,7 @@ experiments_new/
 ├── _sarp.py                    # pulse callbacks + Bezier-weighted graph builder
 ├── fig_multimodal.py
 ├── fig_restriction.py
+├── fig_restriction_rate.py
 ├── tab_synthetic.py
 ├── tab_real_stats.py
 ├── tab_real_mle.py
