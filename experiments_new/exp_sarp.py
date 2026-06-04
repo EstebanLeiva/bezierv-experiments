@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 """Reproduce the data-driven reliable shortest-path application (paper §8).
 
-Steps:
-    1. Load Chicago_main.json, preprocess for the chosen regime.
-    2. Fit a Bezier RV (PGD) on every arc.
-    3. Solve the S-aRP via the pulse algorithm with Monte-Carlo convolution
-       (matching node 136 -> 306, alpha=0.9, gamma=0.4).
-    4. Plot the Chicago network with the optimal path overlaid (paper
-       Figure 6a) and the path's travel-time distribution with the budget and
-       reliability lines (paper Figure 6b).
+Steps: load Chicago_main.json and preprocess the regime; fit a Bezier RV (PGD)
+per arc; solve the S-aRP via the pulse algorithm with Monte-Carlo convolution
+(node 136 -> 306, alpha=0.9, gamma=0.4); plot the network with the optimal path
+(Figure 6a) and the path travel-time distribution with budget/reliability lines
+(Figure 6b).
 
 Outputs:
     figures/sarp_path_grid.pgf

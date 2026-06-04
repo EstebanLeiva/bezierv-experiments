@@ -6,10 +6,9 @@ Output: tables/MDEtab.tex
         tables/realmse_raw.csv                       (per-arc long-format results)
         tables/realmse_partial_{regime}.csv          (incremental checkpoint per regime)
 
-The script is resumable: each (arc, method) fit is appended to a per-regime
-checkpoint CSV as soon as it completes. If the run is interrupted (Ctrl-C, crash,
-timeout), simply re-invoke with the same arguments and it will pick up where it
-left off. To start fresh, delete the partial CSVs (or pass --fresh).
+Resumable: each (arc, method) fit is appended to a per-regime checkpoint CSV as
+it completes, so re-invoking with the same args resumes an interrupted run. Pass
+--fresh (or delete the partials) to start over.
 
 Usage:
     python tab_real_mse.py                       # smoke run, 20 arcs per regime

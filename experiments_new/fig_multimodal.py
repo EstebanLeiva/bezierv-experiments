@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-"""Reproduce Figure 4 of the paper: Bézier fit of a 4-component Gaussian mixture.
+"""Reproduce Figure 4: Bézier fit of a 4-component Gaussian mixture.
 
 Output: figures/multimodal.pgf
-
-Usage:
-    python fig_multimodal.py            # default seed=42, output=figures/multimodal.pgf
-    python fig_multimodal.py --seed 7
+Usage:  python fig_multimodal.py
 """
 import argparse
 from pathlib import Path

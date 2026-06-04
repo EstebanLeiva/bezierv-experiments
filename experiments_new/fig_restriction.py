@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 """Reproduce Figure 5 (`fig:restrictioneval`): restriction quality vs Bezier degree.
 
-The counterexample distribution from paper Example 3.6 is a degree-3 Bezier
-distribution with non-monotone control points:
-    controls_x = (0, 0.6, 0.4, 1)
-    controls_z = (0, 1,   0,   1)
-We draw 1000 samples from it via inverse-transform sampling (closed form), then
-fit IPOPT (nonlinear, restricted formulation) and PGD (further-restricted convex
-QP) for each Bezier degree n = 3, ..., 20 and plot the resulting MSE.
+The counterexample (paper Example 3.6) is a degree-3 Bezier distribution with
+non-monotone control points x=(0,0.6,0.4,1), z=(0,1,0,1). We draw 1000 samples by
+inverse-transform sampling, fit IPOPT (restricted) and PGD (convex QP) for each
+degree n=3..20, and plot the MSE.
 
 Output: figures/restriction.pgf
         figures/restriction_raw.csv
-
-Usage:
-    python fig_restriction.py
+Usage:  python fig_restriction.py            # paper sweep n=3..20
 """
 import argparse
 import time as _time
@@ -29,13 +24,10 @@ from _fit_benchmark import _mse_options
 
 
 # ── Counterexample distribution (paper Example 3.6) ──────────────────────────
-# Bezier cubic with non-monotone control points; the pdf is still ≥ 0.
-#     F(t) = sum_{i=0..3} B_{3,i}(t) * z_i, where z = (0, 1, 0, 1)
-#          = 3t(1-t)^2 + t^3
-#     x(t) = sum_{i=0..3} B_{3,i}(t) * x_i, where x = (0, 0.6, 0.4, 1)
-#          = 1.8 t (1-t)^2 + 1.2 t^2 (1-t) + t^3
-# F is monotone in t (F'(t) = 3(1-2t)^2 ≥ 0), so inverse-transform sampling works:
-#     u ∈ U[0,1] → solve F(t) = u → return x(t)
+# Degree-3 Bezier with non-monotone controls x=(0,0.6,0.4,1), z=(0,1,0,1); pdf
+# stays ≥ 0. F is monotone in t, so inverse-transform sampling works:
+#     u ∈ U[0,1] → solve F(t)=u → x(t).
+# _F = CDF as a function of t; _x = support point x(t).
 def _F(t):  # noqa: N802
     return 3.0 * t * (1.0 - t) ** 2 + t ** 3
 
@@ -49,7 +41,6 @@ def sample_counterexample(n: int, *, seed: int = 42) -> np.ndarray:
     u = rng.uniform(size=n)
     out = np.empty(n)
     for i, ui in enumerate(u):
-        # F is monotone increasing on [0,1] with F(0)=0, F(1)=1.
         t_sol = brentq(lambda t: _F(t) - ui, 0.0, 1.0)
         out[i] = _x(t_sol)
     return np.sort(out)

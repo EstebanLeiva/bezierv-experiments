@@ -8,11 +8,7 @@ mm = 1 / 25.4
 
 
 def save(fig, path, *, dpi: int = 200) -> Path:
-    """Save *fig* as the given .pgf and an accompanying .png preview.
-
-    The .pgf is what gets embedded in the paper; the .png is for quickly
-    eyeballing the figure without compiling LaTeX. Returns the .pgf path.
-    """
+    """Save *fig* as a .pgf (embedded in the paper) plus a .png preview; returns the .pgf path."""
     path = Path(path)
     fig.savefig(path, bbox_inches=None)
     fig.savefig(path.with_suffix('.png'), dpi=dpi, bbox_inches='tight')

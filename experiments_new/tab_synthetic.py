@@ -4,7 +4,7 @@
 Outputs:
     tables/syntheticmle.tex
     tables/syntheticmse.tex
-    tables/synthetic_raw.csv      (per-instance long-format results, for traceability)
+    tables/synthetic_raw.csv      (per-instance long-format results)
 
 Usage:
     python tab_synthetic.py                          # smoke run, 3 instances per family

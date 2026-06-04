@@ -1,7 +1,8 @@
 """Pulse-algorithm callbacks for the stochastic shortest-path experiment (paper §8).
 
-The deterministic cost (`length_miles`) is what gets minimised; `prune_feasibility` enforces the chance constraint
-P[t(P) ≤ T_max] ≥ alpha via Monte-Carlo convolution of arc-wise Bezier RVs.
+`length_miles` is the minimised deterministic cost; `prune_feasibility` enforces
+the chance constraint P[t(P) ≤ T_max] ≥ alpha via Monte-Carlo convolution of the
+arc-wise Bezier RVs.
 """
 from __future__ import annotations
 

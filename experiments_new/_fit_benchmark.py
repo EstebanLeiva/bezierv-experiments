@@ -1,5 +1,4 @@
-"""Benchmark helpers for the synthetic and Chicago-arc fitting experiments.
-"""
+"""Benchmark helpers for the synthetic and Chicago-arc fitting experiments."""
 from __future__ import annotations
 
 import time as _time
@@ -325,13 +324,10 @@ def run_arc_mse_benchmark_resumable(
 ) -> pd.DataFrame:
     """Resumable variant of :func:`run_arc_mse_benchmark`.
 
-    Each (arc, method) fit is written to *checkpoint_path* as soon as it completes,
-    so a partial run can be resumed by invoking this function again with the same
-    arcs and checkpoint path. Pairs already present in the checkpoint for *regime*
-    are skipped.
-
-    Returns the rows for *regime* loaded back from the checkpoint (so the caller
-    sees both freshly computed results and any prior partial work).
+    Each (arc, method) fit is written to *checkpoint_path* as it completes, so a
+    partial run resumes by re-invoking with the same arcs and checkpoint; pairs
+    already recorded for *regime* are skipped. Returns the rows for *regime*
+    loaded back from the checkpoint (fresh results + any prior partial work).
     """
     checkpoint_path = Path(checkpoint_path)
     done = _load_done_arc_methods(checkpoint_path, regime)
