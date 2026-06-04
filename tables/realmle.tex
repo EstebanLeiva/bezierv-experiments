@@ -1,0 +1,21 @@
+\begin{table}[H]
+    \centering
+    \resizebox{\textwidth}{!}{
+    \begin{tabular}{lc rr rr rr rr rr rr}
+        \toprule
+        & & \multicolumn{4}{c}{B\'ezier} & \multicolumn{4}{c}{Beta} & \multicolumn{4}{c}{Johnson} \\
+        \cmidrule(lr){3-6} \cmidrule(lr){7-10} \cmidrule(lr){11-14}
+        & & \multicolumn{2}{c}{time (ms)} & \multicolumn{2}{c}{NLL} & \multicolumn{2}{c}{time (ms)} & \multicolumn{2}{c}{NLL} & \multicolumn{2}{c}{time (ms)} & \multicolumn{2}{c}{NLL} \\
+        \cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8} \cmidrule(lr){9-10} \cmidrule(lr){11-12} \cmidrule(lr){13-14}
+        time frame & $n$ & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} & \multicolumn{1}{c}{mean} & \multicolumn{1}{c}{std} \\
+        \midrule
+        Rush hour    & 10 & 48.1 & 37.7 & $-$2226.7 & 431.0 & 42.7 & 19.2 & $-$2362.0 & 1153.5 & 36.5 & 22.7 & $-$2745.8 & 2178.3 \\
+        Daytime      & 15 & 54.3 & 34.1 & $-$6351.9 & 1241.8 & 50.5 & 20.9 & $-$6806.5 & 3140.5 & 45.2 & 26.1 & $-$8103.6 & 6212.3 \\
+        Full-day     & 20 & 52.5 & 25.9 & $-$12734.4 & 2473.4 & 60.2 & 11.3 & $-$13553.3 & 5691.8 & 58.0 & 26.9 & $-$17129.1 & 14038.2 \\
+        \midrule
+        \multicolumn{2}{l}{average} & 51.6 & 32.6 & $-$7104.3 & \textbf{1382.1} & 51.1 & 17.1 & $-$7573.9 & 3328.6 & 46.5 & 25.2 & $-$9326.2 & 7476.2 \\
+        \bottomrule
+    \end{tabular}}
+    \caption{MLE comparison (transportation data).}
+    \label{tab:realmle}
+\end{table}
