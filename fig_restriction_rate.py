@@ -255,11 +255,11 @@ def emit_figure(df: pd.DataFrame, out_path: Path, *, per_n2: float) -> None:
     if not ref.empty:
         n0, y0 = float(ref.index[0]), float(ref.iloc[0])
         ax.plot(n, (y0 * n0) / n, 'k--', linewidth=1.0,
-                label=r'$\mathcal{O}(1/N)$ reference')
+                label=r'$\mathcal{O}(1/n)$ reference')
 
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_xlabel(r'Degree $N$ (log scale)')
+    ax.set_xlabel(r'$n$-degree (log scale)')
     ax.set_ylabel(r'Discrepancy (log scale)')
     ax.spines[['top', 'right']].set_visible(False)
 
