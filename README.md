@@ -28,7 +28,12 @@ pip install -r requirements.txt
 ```
 
 The Chicago dataset (`data/Chicago_main.json`, ≈280 MB) is the timestamped raw
-data used by `tab_real_*` and `exp_sarp.py`.
+data used by `tab_real_*` and `exp_sarp.py`. It is not bundled with this
+repository; download it from Zenodo (CC BY 4.0) and place it under `data/`:
+
+> Goerigk, M., Hartisch, M., Merten, S., & Miehlich, A. (2025). *Chicago Graph
+> and Travel Time Data* (v1) [Data set]. Zenodo.
+> https://doi.org/10.5281/zenodo.15267992
 
 ## Smoke mode vs. paper-faithful runs
 
